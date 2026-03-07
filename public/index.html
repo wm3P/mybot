@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyBot — Your Personal AI Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #18181f;
+    --border: #2a2a38;
+    --accent: #7c6dfa;
+    --accent2: #fa6d8f;
+    --text: #e8e8f0;
+    --text-dim: #7070a0;
+    --success: #4dffa0;
+    --warning: #ffcc4d;
+    --mono: 'DM Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: var(--mono); height: 100vh;
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0; opacity: 0.4;
+  }
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 24px; border-bottom: 1px solid var(--border);
+    background: var(--surface); position: relative; z-index: 10;
+  }
+  .logo {
+    font-family: var(--sans); font-weight: 800; font-size: 1.2rem;
+    letter-spacing: -0.02em; display: flex; align-items: center; gap: 10px;
+  }
+  .logo-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--accent); box-shadow: 0 0 12px var(--accent);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.8); }
+  }
+  .header-tools { display: flex; gap: 6px; }
+  .tool-btn {
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text-dim); padding: 6px 12px; border-radius: 6px;
+    font-family: var(--mono); font-size: 0.7rem; cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .tool-btn:hover, .tool-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(124,109,250,0.08); }
+  .tool-btn.active { box-shadow: 0 0 8px rgba(124,109,250,0.2); }
+  .main { display: flex; flex: 1; overflow: hidden; position: relative; z-index: 1; }
+  .sidebar {
+    width: 240px; border-right: 1px solid var(--border); background: var(--surface);
+    display: flex; flex-direction: column; padding: 16px 12px; gap: 6px;
+    overflow-y: auto; flex-shrink: 0;
+  }
+  .sidebar-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim); padding: 8px 8px 4px; }
+  .sidebar-btn {
+    display: flex; align-items: center; gap: 10px; padding: 9px 10px;
+    border-radius: 8px; cursor: pointer; font-family: var(--mono); font-size: 0.78rem;
+    color: var(--text-dim); background: none; border: none; text-align: left; width: 100%; transition: all 0.15s;
+  }
+  .sidebar-btn:hover { background: var(--surface2); color: var(--text); }
+  .sidebar-btn.active { background: rgba(124,109,250,0.12); color: var(--accent); }
+  .sidebar-btn .icon { font-size: 1rem; width: 20px; text-align: center; }
+  .notifications-badge {
+    margin-left: auto; background: var(--accent2); color: white;
+    border-radius: 10px; font-size: 0.6rem; padding: 1px 6px; min-width: 18px; text-align: center;
+  }
+  .chat-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .messages {
+    flex: 1; overflow-y: auto; padding: 24px;
+    display: flex; flex-direction: column; gap: 16px; scroll-behavior: smooth;
+  }
+  .messages::-webkit-scrollbar { width: 4px; }
+  .messages::-webkit-scrollbar-track { background: transparent; }
+  .messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .msg { display: flex; gap: 12px; max-width: 820px; animation: fadeUp 0.3s ease; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .msg.user { flex-direction: row-reverse; align-self: flex-end; }
+  .msg-avatar {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0;
+  }
+  .msg.user .msg-avatar { background: rgba(124,109,250,0.2); border: 1px solid var(--accent); }
+  .msg.bot .msg-avatar { background: rgba(77,255,160,0.1); border: 1px solid var(--success); }
+  .msg-content {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 12px 16px; font-size: 0.82rem; line-height: 1.7; max-width: 600px;
+  }
+  .msg.user .msg-content { background: rgba(124,109,250,0.1); border-color: rgba(124,109,250,0.3); }
+  .msg-content .tag {
+    display: inline-block; font-size: 0.65rem; padding: 2px 7px; border-radius: 4px;
+    margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .tag.search { background: rgba(77,255,160,0.1); color: var(--success); border: 1px solid rgba(77,255,160,0.3); }
+  .tag.file { background: rgba(255,204,77,0.1); color: var(--warning); border: 1px solid rgba(255,204,77,0.3); }
+  .tag.notif { background: rgba(250,109,143,0.1); color: var(--accent2); border: 1px solid rgba(250,109,143,0.3); }
+  .right-panel {
+    width: 280px; border-left: 1px solid var(--border); background: var(--surface);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .panel-tabs { display: flex; border-bottom: 1px solid var(--border); }
+  .panel-tab {
+    flex: 1; padding: 10px; font-size: 0.7rem; font-family: var(--mono);
+    text-align: center; cursor: pointer; color: var(--text-dim); background: none;
+    border: none; border-bottom: 2px solid transparent; transition: all 0.2s;
+  }
+  .panel-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .panel-content { flex: 1; overflow-y: auto; padding: 14px; }
+  .file-item {
+    display: flex; align-items: center; gap: 10px; padding: 8px 10px;
+    border-radius: 8px; border: 1px solid var(--border); margin-bottom: 8px;
+    font-size: 0.74rem; cursor: pointer; transition: all 0.15s; background: var(--surface2);
+  }
+  .file-item:hover { border-color: var(--warning); color: var(--warning); }
+  .file-icon { font-size: 1.1rem; }
+  .file-meta { color: var(--text-dim); font-size: 0.65rem; margin-top: 1px; }
+  .notif-item {
+    padding: 10px; border-radius: 8px; border-left: 3px solid var(--accent);
+    background: var(--surface2); margin-bottom: 8px; font-size: 0.74rem; line-height: 1.5;
+  }
+  .notif-item.warn { border-left-color: var(--warning); }
+  .notif-item.success { border-left-color: var(--success); }
+  .notif-time { font-size: 0.62rem; color: var(--text-dim); margin-top: 4px; }
+  .input-bar { padding: 16px 24px; border-top: 1px solid var(--border); background: var(--surface); }
+  .input-wrapper {
+    display: flex; gap: 10px; align-items: flex-end;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 10px 14px; transition: border-color 0.2s;
+  }
+  .input-wrapper:focus-within { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(124,109,250,0.1); }
+  .mode-pills { display: flex; gap: 4px; margin-bottom: 10px; }
+  .pill {
+    padding: 4px 10px; border-radius: 20px; font-size: 0.65rem; font-family: var(--mono);
+    cursor: pointer; border: 1px solid var(--border); color: var(--text-dim); background: none; transition: all 0.15s;
+  }
+  .pill:hover { border-color: var(--accent); color: var(--accent); }
+  .pill.active { background: rgba(124,109,250,0.15); border-color: var(--accent); color: var(--accent); }
+  textarea {
+    flex: 1; background: none; border: none; outline: none;
+    font-family: var(--mono); font-size: 0.82rem; color: var(--text);
+    resize: none; max-height: 120px; min-height: 22px; line-height: 1.5;
+  }
+  textarea::placeholder { color: var(--text-dim); }
+  .send-btn {
+    background: var(--accent); border: none; border-radius: 8px;
+    width: 34px; height: 34px; cursor: pointer; display: flex;
+    align-items: center; justify-content: center; font-size: 1rem;
+    transition: all 0.2s; flex-shrink: 0;
+  }
+  .send-btn:hover { background: #9585ff; transform: scale(1.05); }
+  .send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .typing { display: flex; gap: 4px; padding: 4px 0; }
+  .typing span { width: 5px; height: 5px; border-radius: 50%; background: var(--text-dim); animation: blink 1.2s infinite; }
+  .typing span:nth-child(2) { animation-delay: 0.2s; }
+  .typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes blink {
+    0%, 80%, 100% { transform: scale(1); opacity: 0.4; }
+    40% { transform: scale(1.3); opacity: 1; }
+  }
+  .upload-zone {
+    border: 2px dashed var(--border); border-radius: 10px; padding: 20px;
+    text-align: center; font-size: 0.75rem; color: var(--text-dim);
+    cursor: pointer; transition: all 0.2s; margin-bottom: 12px;
+  }
+  .upload-zone:hover { border-color: var(--warning); color: var(--warning); }
+  .status-bar { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 0.65rem; color: var(--text-dim); }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); box-shadow: 0 0 6px var(--success); }
+  .sidebar::-webkit-scrollbar, .panel-content::-webkit-scrollbar { width: 3px; }
+  .sidebar::-webkit-scrollbar-thumb, .panel-content::-webkit-scrollbar-thumb { background: var(--border); }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <div class="logo-dot"></div>
+    MyBot
+    <span style="font-weight:400; font-size:0.75rem; color:var(--text-dim); font-family:var(--mono);">// personal assistant</span>
+  </div>
+  <div class="header-tools">
+    <button class="tool-btn active" id="toggleSearch">⚡ Web Search</button>
+    <button class="tool-btn" id="toggleFiles">📁 Files</button>
+    <button class="tool-btn" id="toggleNotif">🔔 Alerts</button>
+  </div>
+</header>
+<div class="main">
+  <div class="sidebar">
+    <div class="sidebar-label">Chats</div>
+    <button class="sidebar-btn active"><span class="icon">💬</span> General Chat</button>
+    <button class="sidebar-btn"><span class="icon">🔍</span> Research</button>
+    <button class="sidebar-btn"><span class="icon">📂</span> File Tasks</button>
+    <div class="sidebar-label" style="margin-top:8px;">Tools</div>
+    <button class="sidebar-btn" onclick="showPanel('files')"><span class="icon">📁</span> File Manager</button>
+    <button class="sidebar-btn" onclick="showPanel('notifs')">
+      <span class="icon">🔔</span> Notifications
+      <span class="notifications-badge" id="notifCount">3</span>
+    </button>
+    <button class="sidebar-btn" onclick="clearChat()"><span class="icon">🗑</span> Clear Chat</button>
+    <div class="sidebar-label" style="margin-top:8px;">Quick Prompts</div>
+    <button class="sidebar-btn" onclick="quickPrompt('Search the web for latest AI news')"><span class="icon">📰</span> AI News</button>
+    <button class="sidebar-btn" onclick="quickPrompt('Summarize my files and list them')"><span class="icon">📋</span> File Summary</button>
+    <button class="sidebar-btn" onclick="quickPrompt('What tasks should I focus on today?')"><span class="icon">✅</span> Daily Tasks</button>
+  </div>
+
+  <div class="chat-area">
+    <div class="messages" id="messages">
+      <div class="msg bot">
+        <div class="msg-avatar">🤖</div>
+        <div class="msg-content">
+          <div style="font-family:var(--sans); font-weight:600; font-size:0.9rem; margin-bottom:6px;">Hey, I'm MyBot 👋</div>
+          I can help you <strong>search the web</strong>, <strong>manage files</strong>, <strong>send notifications</strong>, and answer any questions.<br><br>
+          Use the mode pills below to switch what I focus on, or just ask me anything.
+        </div>
+      </div>
+    </div>
+    <div class="input-bar">
+      <div class="mode-pills">
+        <button class="pill active" id="pill-chat" onclick="setPill('chat')">💬 Chat</button>
+        <button class="pill" id="pill-search" onclick="setPill('search')">🔍 Web Search</button>
+        <button class="pill" id="pill-files" onclick="setPill('files')">📁 Files</button>
+        <button class="pill" id="pill-notify" onclick="setPill('notify')">🔔 Notify</button>
+      </div>
+      <div class="status-bar">
+        <div class="status-dot"></div>
+        <span id="statusText">Claude Sonnet · Ready</span>
+      </div>
+      <div class="input-wrapper">
+        <textarea id="userInput" placeholder="Ask me anything..." rows="1"
+          onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <div class="panel-tabs">
+      <button class="panel-tab active" id="tab-files" onclick="showPanel('files')">📁 Files</button>
+      <button class="panel-tab" id="tab-notifs" onclick="showPanel('notifs')">🔔 Alerts</button>
+    </div>
+    <div class="panel-content" id="panelContent"></div>
+  </div>
+</div>
+
+<script>
+let activeMode = 'chat';
+let activePanelTab = 'files';
+let conversationHistory = [];
+let notifications = [];
+let files = [
+  { name: 'project-notes.txt', size: '4.2 KB', icon: '📄', date: 'Today' },
+  { name: 'research.pdf', size: '1.1 MB', icon: '📕', date: 'Yesterday' },
+  { name: 'data.csv', size: '82 KB', icon: '📊', date: 'Mar 5' },
+  { name: 'ideas.md', size: '2.8 KB', icon: '📝', date: 'Mar 4' },
+];
+const initialNotifs = [
+  { msg: 'Web search completed successfully', type: 'success', time: '2 min ago' },
+  { msg: 'File "research.pdf" added to your library', type: 'warn', time: '10 min ago' },
+  { msg: 'MyBot is ready and connected to Claude API', type: '', time: 'Just now' },
+];
+
+function renderPanel() {
+  const content = document.getElementById('panelContent');
+  if (activePanelTab === 'files') {
+    content.innerHTML = `
+      <div class="upload-zone" onclick="simulateUpload()">⬆ Drop files here or click to upload</div>
+      ${files.map(f => `
+        <div class="file-item">
+          <span class="file-icon">${f.icon}</span>
+          <div><div>${f.name}</div><div class="file-meta">${f.size} · ${f.date}</div></div>
+        </div>`).join('')}`;
+  } else {
+    const all = [...initialNotifs, ...notifications];
+    document.getElementById('notifCount').textContent = all.length;
+    content.innerHTML = all.map(n => `
+      <div class="notif-item ${n.type}">${n.msg}<div class="notif-time">${n.time}</div></div>`).join('')
+      || '<div style="color:var(--text-dim);font-size:0.75rem;text-align:center;padding:20px;">No notifications</div>';
+  }
+}
+
+function showPanel(tab) {
+  activePanelTab = tab;
+  document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  renderPanel();
+}
+
+function setPill(mode) {
+  activeMode = mode;
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  document.getElementById('pill-' + mode).classList.add('active');
+  const hints = { chat: 'Ask me anything...', search: 'What should I search for?', files: 'Ask about your files...', notify: 'What should I remind you about?' };
+  document.getElementById('userInput').placeholder = hints[mode];
+}
+
+function autoResize(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 120) + 'px'; }
+function handleKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }
+
+function addMessage(role, text, tag = null) {
+  const msgs = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+  const tagHtml = tag ? `<div class="tag ${tag}">${tag === 'search' ? '⚡ web search' : tag === 'file' ? '📁 file op' : '🔔 notification'}</div>` : '';
+  div.innerHTML = `<div class="msg-avatar">${role === 'user' ? '👤' : '🤖'}</div><div class="msg-content">${tagHtml}${text}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function addTypingIndicator() {
+  const msgs = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'msg bot'; div.id = 'typing-indicator';
+  div.innerHTML = `<div class="msg-avatar">🤖</div><div class="msg-content"><div class="typing"><span></span><span></span><span></span></div></div>`;
+  msgs.appendChild(div); msgs.scrollTop = msgs.scrollHeight;
+}
+
+function removeTypingIndicator() { const el = document.getElementById('typing-indicator'); if (el) el.remove(); }
+
+async function sendMessage() {
+  const input = document.getElementById('userInput');
+  const text = input.value.trim();
+  if (!text) return;
+
+  const btn = document.getElementById('sendBtn');
+  btn.disabled = true; input.value = ''; input.style.height = 'auto';
+  addMessage('user', text);
+
+  const tag = activeMode === 'notify' ? 'notif' : activeMode !== 'chat' ? activeMode : null;
+  const modeInstructions = {
+    chat: 'You are MyBot, a helpful personal AI assistant. Be concise, clear, and friendly. Use plain text without markdown symbols.',
+    search: 'You are MyBot with web search capability. Search for information and summarize findings clearly. Use plain text.',
+    files: 'You are MyBot helping the user manage their files. Use plain text.',
+    notify: 'You are MyBot. Confirm the reminder the user wants to set, and say when you will alert them. Use plain text.'
+  };
+
+  conversationHistory.push({ role: 'user', content: text });
+  document.getElementById('statusText').textContent = 'Claude Sonnet · Thinking...';
+  addTypingIndicator();
+
+  const body = {
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 1000,
+    system: modeInstructions[activeMode] || modeInstructions.chat,
+    messages: conversationHistory,
+  };
+
+  if (activeMode === 'search') {
+    body.tools = [{ type: 'web_search_20250305', name: 'web_search' }];
+  }
+
+  try {
+    // Calls our server-side proxy — API key stays secret
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+
+    const data = await res.json();
+    removeTypingIndicator();
+
+    if (data.error) throw new Error(data.error);
+
+    const replyText = data.content
+      .filter(b => b.type === 'text')
+      .map(b => b.text)
+      .join('\n') || 'No response generated.';
+
+    conversationHistory.push({ role: 'assistant', content: replyText });
+    addMessage('bot', replyText.replace(/\n/g, '<br>'), tag);
+
+    if (activeMode === 'notify') {
+      notifications.unshift({ msg: `Reminder: "${text.substring(0,50)}${text.length>50?'...':''}"`, type: 'success', time: 'Just now' });
+      if (activePanelTab === 'notifs') renderPanel();
+      document.getElementById('notifCount').textContent = initialNotifs.length + notifications.length;
+    }
+  } catch (err) {
+    removeTypingIndicator();
+    addMessage('bot', `⚠ Error: ${err.message}`);
+  }
+
+  document.getElementById('statusText').textContent = 'Claude Sonnet · Ready';
+  btn.disabled = false; input.focus();
+}
+
+function quickPrompt(text) { document.getElementById('userInput').value = text; sendMessage(); }
+function clearChat() {
+  conversationHistory = [];
+  document.getElementById('messages').innerHTML = `
+    <div class="msg bot" style="animation: fadeUp 0.3s ease;">
+      <div class="msg-avatar">🤖</div>
+      <div class="msg-content">Chat cleared. Ready for a fresh start!</div>
+    </div>`;
+}
+function simulateUpload() {
+  const items = [['report.docx','34 KB','📄'],['screenshot.png','210 KB','🖼'],['budget.xlsx','1.2 MB','📊']];
+  const [name, size, icon] = items[Math.floor(Math.random()*items.length)];
+  files.unshift({ name, size, icon, date: 'Just now' });
+  renderPanel();
+  notifications.unshift({ msg: `File "${name}" uploaded`, type: 'success', time: 'Just now' });
+  document.getElementById('notifCount').textContent = initialNotifs.length + notifications.length;
+}
+
+renderPanel();
+</script>
+</body>
+</html>
