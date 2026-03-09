@@ -53,7 +53,7 @@
   .tool-btn {
     background: var(--surface2); border: 1px solid var(--border);
     color: var(--text-dim); padding: 6px 12px; border-radius: 6px;
-    font-family: var(--mono); font-size: 0.7rem; cursor: pointer; transition: all 0.2s;
+    font-family: var(--mono); font-size: 0.82rem; cursor: pointer; transition: all 0.2s;
     display: flex; align-items: center; gap: 6px;
   }
   .tool-btn:hover, .tool-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(124,109,250,0.08); }
@@ -64,10 +64,10 @@
     display: flex; flex-direction: column; padding: 16px 12px; gap: 6px;
     overflow-y: auto; flex-shrink: 0;
   }
-  .sidebar-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim); padding: 8px 8px 4px; }
+  .sidebar-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim); padding: 8px 8px 4px; }
   .sidebar-btn {
     display: flex; align-items: center; gap: 10px; padding: 9px 10px;
-    border-radius: 8px; cursor: pointer; font-family: var(--mono); font-size: 0.78rem;
+    border-radius: 8px; cursor: pointer; font-family: var(--mono); font-size: 0.9rem;
     color: var(--text-dim); background: none; border: none; text-align: left; width: 100%; transition: all 0.15s;
   }
   .sidebar-btn:hover { background: var(--surface2); color: var(--text); }
@@ -75,7 +75,7 @@
   .sidebar-btn .icon { font-size: 1rem; width: 20px; text-align: center; }
   .notifications-badge {
     margin-left: auto; background: var(--accent2); color: white;
-    border-radius: 10px; font-size: 0.6rem; padding: 1px 6px; min-width: 18px; text-align: center;
+    border-radius: 10px; font-size: 0.75rem; padding: 1px 6px; min-width: 18px; text-align: center;
   }
   .chat-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
   .messages {
@@ -100,7 +100,7 @@
   }
   .msg.user .msg-content { background: rgba(124,109,250,0.1); border-color: rgba(124,109,250,0.3); }
   .msg-content .tag {
-    display: inline-block; font-size: 0.65rem; padding: 2px 7px; border-radius: 4px;
+    display: inline-block; font-size: 0.75rem; padding: 2px 7px; border-radius: 4px;
     margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.08em;
   }
   .tag.search { background: rgba(77,255,160,0.1); color: var(--success); border: 1px solid rgba(77,255,160,0.3); }
@@ -112,7 +112,7 @@
   }
   .panel-tabs { display: flex; border-bottom: 1px solid var(--border); }
   .panel-tab {
-    flex: 1; padding: 10px; font-size: 0.7rem; font-family: var(--mono);
+    flex: 1; padding: 10px; font-size: 0.85rem; font-family: var(--mono);
     text-align: center; cursor: pointer; color: var(--text-dim); background: none;
     border: none; border-bottom: 2px solid transparent; transition: all 0.2s;
   }
@@ -121,18 +121,18 @@
   .file-item {
     display: flex; align-items: center; gap: 10px; padding: 8px 10px;
     border-radius: 8px; border: 1px solid var(--border); margin-bottom: 8px;
-    font-size: 0.74rem; cursor: pointer; transition: all 0.15s; background: var(--surface2);
+    font-size: 0.85rem; cursor: pointer; transition: all 0.15s; background: var(--surface2);
   }
   .file-item:hover { border-color: var(--warning); color: var(--warning); }
   .file-icon { font-size: 1.1rem; }
-  .file-meta { color: var(--text-dim); font-size: 0.65rem; margin-top: 1px; }
+  .file-meta { color: var(--text-dim); font-size: 0.75rem; margin-top: 1px; }
   .notif-item {
     padding: 10px; border-radius: 8px; border-left: 3px solid var(--accent);
-    background: var(--surface2); margin-bottom: 8px; font-size: 0.74rem; line-height: 1.5;
+    background: var(--surface2); margin-bottom: 8px; font-size: 0.85rem; line-height: 1.5;
   }
   .notif-item.warn { border-left-color: var(--warning); }
   .notif-item.success { border-left-color: var(--success); }
-  .notif-time { font-size: 0.62rem; color: var(--text-dim); margin-top: 4px; }
+  .notif-time { font-size: 0.75rem; color: var(--text-dim); margin-top: 4px; }
   .input-bar { padding: 16px 24px; border-top: 1px solid var(--border); background: var(--surface); }
   .input-wrapper {
     display: flex; gap: 10px; align-items: flex-end;
@@ -142,7 +142,7 @@
   .input-wrapper:focus-within { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(124,109,250,0.1); }
   .mode-pills { display: flex; gap: 4px; margin-bottom: 10px; }
   .pill {
-    padding: 4px 10px; border-radius: 20px; font-size: 0.65rem; font-family: var(--mono);
+    padding: 4px 10px; border-radius: 20px; font-size: 0.82rem; font-family: var(--mono);
     cursor: pointer; border: 1px solid var(--border); color: var(--text-dim); background: none; transition: all 0.15s;
   }
   .pill:hover { border-color: var(--accent); color: var(--accent); }
@@ -175,7 +175,7 @@
     cursor: pointer; transition: all 0.2s; margin-bottom: 12px;
   }
   .upload-zone:hover { border-color: var(--warning); color: var(--warning); }
-  .status-bar { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 0.65rem; color: var(--text-dim); }
+  .status-bar { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 0.8rem; color: var(--text-dim); }
   .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); box-shadow: 0 0 6px var(--success); }
   .sidebar::-webkit-scrollbar, .panel-content::-webkit-scrollbar { width: 3px; }
   .sidebar::-webkit-scrollbar-thumb, .panel-content::-webkit-scrollbar-thumb { background: var(--border); }
